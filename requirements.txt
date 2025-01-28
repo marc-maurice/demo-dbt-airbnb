@@ -1,0 +1,9 @@
+dbt-snowflake==1.9.0
+jupyterlab
+ipykernel
+pandas
+numpy
+scipy
+matplotlib
+seaborn
+scikit-learn

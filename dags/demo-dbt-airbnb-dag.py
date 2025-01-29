@@ -1,25 +1,39 @@
 from airflow import DAG
 from airflow.operators.bash import BashOperator
-from datetime import datetime
+from airflow.utils.dates import days_ago
+from datetime import timedelta
 
-# Define local path for dbt project
-DBT_LOCAL_PATH = "/home/ec2-user/demo-dbt-airbnb/dbtairdemo/"
-
+# Default DAG arguments
 default_args = {
-    'owner': 'airflow',
-    'start_date': datetime(2025, 1, 1),
-    'retries': 1
+    "owner": "airflow",
+    "depends_on_past": False,
+    "start_date": days_ago(1),  # Ensures DAG starts immediately
+    "retries": 1,
+    "retry_delay": timedelta(minutes=5),
 }
 
-with DAG(
-    'demo-dbt-airbnb-dag',
+# Define DAG
+dag = DAG(
+    "demo_dbt_airbnb",
     default_args=default_args,
-    schedule_interval='@daily',  # Adjust as needed
-    catchup=False
-) as dag:
+    description="Run dbt commands for the Airbnb project",
+    schedule_interval=None,  # Manually triggered
+    catchup=False,
+)
 
-    # Task: Run dbt commands
-    run_dbt = BashOperator(
-        task_id='run_dbt',
-        bash_command=f'cd {DBT_LOCAL_PATH} && dbt run'
-    )
+# Task 1: Run dbt models
+dbt_run = BashOperator(
+    task_id="dbt_run",
+    bash_command="cd ~/code/demo-dbt-airbnb && dbt run > ~/airflow/logs/dbt_run.log 2>&1",
+    dag=dag,
+)
+
+# Task 2: Test dbt models
+dbt_test = BashOperator(
+    task_id="dbt_test",
+    bash_command="cd ~/code/demo-dbt-airbnb && dbt test > ~/airflow/logs/dbt_test.log 2>&1",
+    dag=dag,
+)
+
+# Define task dependencies
+dbt_run >> dbt_test  # dbt_test runs only if dbt_run succeeds

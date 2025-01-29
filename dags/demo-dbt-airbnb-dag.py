@@ -24,14 +24,14 @@ dag = DAG(
 # Task 1: Run dbt models
 dbt_run = BashOperator(
     task_id="dbt_run",
-    bash_command="cd ~/code/demo-dbt-airbnb && dbt run > ~/airflow/logs/dbt_run.log 2>&1",
+    bash_command="source ~/airflow-venv/bin/activate && cd ~/dbt/demo-dbt-airbnb/dbtairdemo && dbt run --profiles-dir ~/.dbt > ~/airflow/logs/dbt_run.log 2>&1",
     dag=dag,
 )
 
 # Task 2: Test dbt models
 dbt_test = BashOperator(
     task_id="dbt_test",
-    bash_command="cd ~/code/demo-dbt-airbnb && dbt test > ~/airflow/logs/dbt_test.log 2>&1",
+    bash_command="source ~/airflow-venv/bin/activate && cd ~/dbt/demo-dbt-airbnb/dbtairdemo && dbt test --profiles-dir ~/.dbt > ~/airflow/logs/dbt_test.log 2>&1",
     dag=dag,
 )
 
